@@ -3,7 +3,7 @@ import {
   checkProductAgainstCriteria,
   type CheckProductAgainstCriteriaResult,
   type WCProduct,
-} from '..'
+} from '../agent'
 import { criteria, type Criteria } from '../criteria'
 import { models } from '../models'
 interface TestInput {
