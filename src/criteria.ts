@@ -17,12 +17,14 @@ export type CriteriaKey =
   | 'weapons'
 
 export interface Criteria {
+  key: CriteriaKey
   label: string
   examples: string
 }
 
 export const criteria: Record<CriteriaKey, Criteria> = {
   illegal: {
+    key: 'illegal',
     label: 'Any illegal products and services',
     examples: `
 * Illegal drugs, substances designed to mimic illegal drugs, including kava
@@ -35,6 +37,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   adult: {
+    key: 'adult',
     label: 'Adult content and services',
     examples: `
 * Adult services, including prostitution, escorts, pay-per-view, sexual massages, fetish services, mail-order brides, and adult live-chat features
@@ -46,12 +49,14 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   debt: {
+    key: 'debt',
     label: 'Debt relief companies',
     examples: `
 * Debt settlement, debt negotiation, and debt consolidation
 `,
   },
   financial: {
+    key: 'financial',
     label: 'The following financial products and services',
     examples: `
 * ATMs 
@@ -66,6 +71,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   gambling: {
+    key: 'gambling',
     label: 'Gambling',
     examples: `
 * Games of chance including gambling, internet gambling, casino games, sweepstakes and contests, and fantasy sports leagues with a monetary or material prize
@@ -77,6 +83,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   government: {
+    key: 'government',
     label: 'Government services',
     examples: `
 * Offering products and services by or on behalf of embassies and consulates
@@ -86,12 +93,14 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   identity: {
+    key: 'identity',
     label: 'Identity services',
     examples: `
 * Identity theft protection, services including monitoring and recovery
 `,
   },
   intellectual: {
+    key: 'intellectual',
     label:
       'Products and services that infringe on intellectual property rights',
     examples: `
@@ -103,6 +112,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   legal: {
+    key: 'legal',
     label: 'The following legal services',
     examples: `
 * Bankruptcy lawyers
@@ -111,6 +121,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   lending: {
+    key: 'lending',
     label: 'Lending and credit',
     examples: `
 * Loan repayments with credit cards
@@ -118,6 +129,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   marijuana: {
+    key: 'marijuana',
     label: 'Marijuana',
     examples: `
 * Cannabis products 
@@ -128,12 +140,14 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   nutraceuticals: {
+    key: 'nutraceuticals',
     label: 'Nutraceuticals and pseudo-pharmaceuticals',
     examples: `
 * Pseudo-pharmaceuticals or nutraceuticals that are not safe or make harmful claims
 `,
   },
   'non-fiat': {
+    key: 'non-fiat',
     label: 'Non-fiat currency',
     examples: `
 * Cryptocurrency mining and staking
@@ -142,6 +156,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   travel: {
+    key: 'travel',
     label: 'Travel',
     examples: `
 * Commercial airlines and cruises
@@ -150,6 +165,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   unfair: {
+    key: 'unfair',
     label: 'Unfair, deceptive, or abusive acts or practices',
     examples: `
 * Pyramid schemes
@@ -166,6 +182,7 @@ export const criteria: Record<CriteriaKey, Criteria> = {
 `,
   },
   weapons: {
+    key: 'weapons',
     label: 'Weapons, firearms, explosives, and dangerous materials',
     examples: `
 * Guns, gunpowders, ammunitions, fireworks, and other explosives
