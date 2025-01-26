@@ -25,9 +25,7 @@ const removeFinalSlash = (url: string) => {
 
 // The first argument is the base URL of the WC store
 const args = minimist(process.argv.slice(2))
-const baseUrl = removeFinalSlash(args._[0])
 const showViolations = args.show
-const model = models.gpt4oMini
 
 const db = createDatabase()
 
@@ -36,6 +34,9 @@ if (showViolations) {
   console.log(allViolations)
   process.exit(0)
 }
+
+const model = models.gpt4oMini
+const baseUrl = removeFinalSlash(args._[0])
 
 const siteId = upsertSite(db, baseUrl)
 
