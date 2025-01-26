@@ -16,9 +16,16 @@ import { createDatabase } from './db'
 // To check a site, run `npm start https://testsite.wpcomstaging.com`
 // To show all violations, run `npm run show`
 
+/**
+ * Remove the final slash from a URL
+ */
+const removeFinalSlash = (url: string) => {
+  return url.endsWith('/') ? url.slice(0, -1) : url
+}
+
 // The first argument is the base URL of the WC store
 const args = minimist(process.argv.slice(2))
-const baseUrl = args._[0]
+const baseUrl = removeFinalSlash(args._[0])
 const showViolations = args.show
 const model = models.gpt4oMini
 
@@ -33,6 +40,7 @@ if (showViolations) {
 const siteId = upsertSite(db, baseUrl)
 
 const products = await fetchStoreProducts({ baseUrl })
+console.log(`Fetched ${products.length} products`)
 products.forEach((product) => {
   upsertProduct(db, product, siteId)
 })

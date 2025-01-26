@@ -103,12 +103,16 @@ export const upsertSite = (db: SQLiteDatabase, url: string) => {
 /**
  * Get a single product
  */
-export const getProduct = (db: SQLiteDatabase, permalink: string) => {
+export const getProduct = (
+  db: SQLiteDatabase,
+  permalink: string,
+  siteId: number | bigint
+) => {
   return db
-    .prepare<{ permalink: string }, Product>(
-      `SELECT * FROM products WHERE permalink = @permalink`
+    .prepare<{ permalink: string; site_id: number | bigint }, Product>(
+      `SELECT * FROM products WHERE permalink = @permalink AND site_id = @site_id`
     )
-    .get({ permalink })
+    .get({ permalink, site_id: siteId })
 }
 
 /**
@@ -119,7 +123,7 @@ export const upsertProduct = (
   productData: Omit<Product, 'id' | 'site_id'>,
   siteId: number | bigint
 ) => {
-  const existingProduct = getProduct(db, productData.permalink)
+  const existingProduct = getProduct(db, productData.permalink, siteId)
   if (existingProduct) {
     return existingProduct.id
   }
