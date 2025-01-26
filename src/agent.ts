@@ -96,6 +96,7 @@ export interface ProductResults {
     {
       violates_criteria: boolean
       reason: string
+      model_id: string
     }
   >
 }
@@ -114,7 +115,10 @@ export const checkProductAgainstAllCriteria = async (
   const productResults: ProductResults = {
     product: results[0].product,
     results: results.reduce<ProductResults['results']>((acc, result) => {
-      acc[result.criteriaKey] = result.result
+      acc[result.criteriaKey] = {
+        ...result.result,
+        model_id: result.modelId,
+      }
       return acc
     }, {} as ProductResults['results']),
   }

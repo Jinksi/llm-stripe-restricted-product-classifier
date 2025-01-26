@@ -1,9 +1,16 @@
-import fs from 'fs'
 import minimist from 'minimist'
 
-import { checkProductAgainstAllCriteria, ProductResults } from './agent'
+import { checkProductAgainstAllCriteria } from './agent'
 import { models } from './models'
 import { fetchStoreProducts } from './fetchProducts'
+import {
+  getProductResults,
+  getSiteProducts,
+  upsertProduct,
+  upsertProductResult,
+  upsertSite,
+} from './db'
+import { createDatabase } from './db'
 
 // npm start https://testsite.wpcomstaging.com
 
@@ -13,19 +20,48 @@ const baseUrl = args._[0]
 
 const model = models.gpt4oMini
 
+const db = createDatabase()
+const siteId = upsertSite(db, baseUrl)
+
 const products = await fetchStoreProducts({ baseUrl })
+products.forEach((product) => {
+  upsertProduct(db, product, siteId)
+})
 
-let allProductResults: Record<string, ProductResults> = {}
+const siteProducts = getSiteProducts(db, siteId)
+console.log(siteProducts.map((p) => p.name))
 
-for (const [index, product] of products.entries()) {
-  console.log(
-    `Checking product ${product.name} (${index + 1} of ${products.length})`
-  )
+for (const [index, product] of siteProducts.entries()) {
+  if (!product.description) {
+    continue
+  }
+
+  const productDbResults = getProductResults(db, product.id)
+  if (productDbResults.length > 0) {
+    console.log(
+      `${index + 1}/${products.length} - Skipping product ${product.name}`
+    )
+    continue
+  } else {
+    console.log(
+      `${index + 1}/${products.length} - Checking product ${product.name}`
+    )
+  }
+
   const results = await checkProductAgainstAllCriteria(product, model)
-  allProductResults[product.permalink] = results
+  const upsertedResults = Object.entries(results.results).map(
+    ([criteriaKey, result]) => {
+      const resultData = {
+        ...result,
+        criteria: criteriaKey,
+      }
+      return upsertProductResult(db, resultData, product.id)
+    }
+  )
+
+  console.log(
+    `Saved ${upsertedResults.length} results for product ${product.name}`
+  )
 }
 
-fs.writeFileSync(
-  'allProductResults.json',
-  JSON.stringify(allProductResults, null, 2)
-)
+console.log('Done')
