@@ -73,6 +73,21 @@ export const getSite = (db: SQLiteDatabase, url: string) => {
 }
 
 /**
+ * Get all sites that have violations
+ */
+export const getAllSiteViolations = (db: SQLiteDatabase) => {
+  return db
+    .prepare(
+      `SELECT s.url, r.criteria, r.violates_criteria, r.reason
+      FROM results as r
+      JOIN products as p ON p.id = r.product_id
+      JOIN sites as s ON s.id = p.site_id
+      WHERE r.violates_criteria = 'true'`
+    )
+    .all()
+}
+
+/**
  * Upsert a site
  */
 export const upsertSite = (db: SQLiteDatabase, url: string) => {

@@ -6,21 +6,30 @@ import { fetchStoreProducts } from './fetchProducts'
 import {
   getProductResults,
   getSiteProducts,
+  getAllSiteViolations,
   upsertProduct,
   upsertProductResult,
   upsertSite,
 } from './db'
 import { createDatabase } from './db'
 
-// npm start https://testsite.wpcomstaging.com
+// To check a site, run `npm start https://testsite.wpcomstaging.com`
+// To show all violations, run `npm run show`
 
 // The first argument is the base URL of the WC store
 const args = minimist(process.argv.slice(2))
 const baseUrl = args._[0]
-
+const showViolations = args.show
 const model = models.gpt4oMini
 
 const db = createDatabase()
+
+if (showViolations) {
+  const allViolations = getAllSiteViolations(db)
+  console.log(allViolations)
+  process.exit(0)
+}
+
 const siteId = upsertSite(db, baseUrl)
 
 const products = await fetchStoreProducts({ baseUrl })

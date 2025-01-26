@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx --env-file=.env src/index.ts",
+    "show": "npm run start -- --show",
     "eval:dev": "evalite watch",
     "eval": "evalite",
     "test": "echo \"Error: no test specified\" && exit 1"
