@@ -1,11 +1,12 @@
 import { evalite, createScorer } from 'evalite'
+
 import {
   checkProductAgainstCriteria,
   type CheckProductAgainstCriteriaResult,
-  type WCProduct,
 } from '../agent'
 import { criteria, type Criteria } from '../criteria'
 import { models } from '../models'
+import { WCProduct } from '../fetchProducts'
 interface TestInput {
   product: WCProduct
   criteria: Criteria

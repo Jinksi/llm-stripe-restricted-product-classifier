@@ -1,16 +1,8 @@
 import { z } from 'zod'
 import { generateObject, LanguageModel } from 'ai'
 
-import { type Criteria } from './criteria'
-
-export interface WCProduct {
-  id: number
-  name: string
-  slug: string
-  permalink: string
-  description: string
-  short_description: string
-}
+import { criteria, type CriteriaKey, type Criteria } from './criteria'
+import { type WCProduct } from './fetchProducts'
 
 const schema = z.object({
   violates_criteria: z
@@ -25,8 +17,11 @@ const schema = z.object({
 
 export interface CheckProductAgainstCriteriaResult {
   result: z.infer<typeof schema>
-  criteria: Criteria
-  product: WCProduct
+  criteriaKey: CriteriaKey
+  product: Pick<
+    WCProduct,
+    'name' | 'description' | 'short_description' | 'permalink'
+  >
   modelId: string
   timestamp: string
 }
@@ -70,7 +65,59 @@ export const checkProductAgainstCriteria = async (
     modelId: response.modelId,
     timestamp: response.timestamp.toISOString(),
     result: object,
-    criteria,
-    product,
+    criteriaKey: criteria.key,
+    product: {
+      name: product.name,
+      description: product.description,
+      short_description: product.short_description,
+      permalink: product.permalink,
+    },
   }
+}
+
+/**
+ * @example
+ * {
+ *   product: {
+ *     name: 'Product Name',
+ *     description: 'Product Description',
+ *     short_description: 'Product Short Description',
+ *     permalink: 'https://example.com/product'
+ *   },
+ *   results: {
+ *     'criteria-key': { violates_criteria: true, reason: 'Reason for violation' }
+ *   }
+ * }
+ */
+export interface ProductResults {
+  product: CheckProductAgainstCriteriaResult['product']
+  results: Record<
+    CriteriaKey,
+    {
+      violates_criteria: boolean
+      reason: string
+    }
+  >
+}
+
+export const checkProductAgainstAllCriteria = async (
+  product: WCProduct,
+  model: LanguageModel
+): Promise<ProductResults> => {
+  const allCriteria = Object.values(criteria)
+  const results = await Promise.all(
+    allCriteria.map((criteria) =>
+      checkProductAgainstCriteria(criteria, product, model)
+    )
+  )
+
+  const productResults: ProductResults = {
+    product: results[0].product,
+    results: results.reduce<ProductResults['results']>((acc, result) => {
+      acc[result.criteriaKey] = result.result
+      return acc
+    }, {} as ProductResults['results']),
+  }
+
+  return productResults
 }
