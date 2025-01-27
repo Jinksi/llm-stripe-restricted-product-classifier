@@ -14,6 +14,7 @@ import {
 import { createDatabase } from './db'
 
 // To check a site, run `npm start https://testsite.wpcomstaging.com`
+// To check a site and force all products to be checked again, run `npm start https://testsite.wpcomstaging.com -- --force`
 // To show all violations, run `npm run show`
 
 /**
@@ -26,10 +27,11 @@ const removeFinalSlash = (url: string) => {
 // The first argument is the base URL of the WC store
 const args = minimist(process.argv.slice(2))
 const showViolations = args.show
+const forceUpdate = args.force
 
 const db = createDatabase()
 
-const main = async (baseUrlArg: string) => {
+const main = async (baseUrlArg: string, forceUpdate: boolean) => {
   const model = models.gpt4oMini
   const baseUrl = removeFinalSlash(baseUrlArg)
 
@@ -38,6 +40,7 @@ const main = async (baseUrlArg: string) => {
   const products = await fetchStoreProducts({ baseUrl })
   console.log(`Fetched ${products.length} products`)
   products.forEach((product) => {
+    // TODO: ensure this updates the product if it already exists
     upsertProduct(db, product, siteId)
   })
 
@@ -50,7 +53,7 @@ const main = async (baseUrlArg: string) => {
     }
 
     const productDbResults = getProductResults(db, product.id)
-    if (productDbResults.length > 0) {
+    if (!forceUpdate && productDbResults.length > 0) {
       console.log(
         `${index + 1}/${products.length} - Skipping product ${product.name}`
       )
@@ -86,5 +89,5 @@ if (showViolations) {
   process.exit(0)
 } else {
   // Fetch and check products
-  main(args._[0])
+  main(args._[0], forceUpdate)
 }
