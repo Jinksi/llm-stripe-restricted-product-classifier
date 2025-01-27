@@ -29,57 +29,62 @@ const showViolations = args.show
 
 const db = createDatabase()
 
+const main = async (baseUrlArg: string) => {
+  const model = models.gpt4oMini
+  const baseUrl = removeFinalSlash(baseUrlArg)
+
+  const siteId = upsertSite(db, baseUrl)
+
+  const products = await fetchStoreProducts({ baseUrl })
+  console.log(`Fetched ${products.length} products`)
+  products.forEach((product) => {
+    upsertProduct(db, product, siteId)
+  })
+
+  const siteProducts = getSiteProducts(db, siteId)
+  console.log(siteProducts.map((p) => p.name))
+
+  for (const [index, product] of siteProducts.entries()) {
+    if (!product.description) {
+      continue
+    }
+
+    const productDbResults = getProductResults(db, product.id)
+    if (productDbResults.length > 0) {
+      console.log(
+        `${index + 1}/${products.length} - Skipping product ${product.name}`
+      )
+      continue
+    } else {
+      console.log(
+        `${index + 1}/${products.length} - Checking product ${product.name}`
+      )
+    }
+
+    const results = await checkProductAgainstAllCriteria(product, model)
+    const upsertedResults = Object.entries(results.results).map(
+      ([criteriaKey, result]) => {
+        const resultData = {
+          ...result,
+          criteria: criteriaKey,
+        }
+        return upsertProductResult(db, resultData, product.id)
+      }
+    )
+
+    console.log(
+      `Saved ${upsertedResults.length} results for product ${product.name}`
+    )
+  }
+  console.log('Done')
+}
+
 if (showViolations) {
+  // Show all violations for a site stored in the database
   const allViolations = getAllSiteViolations(db)
   console.log(allViolations)
   process.exit(0)
+} else {
+  // Fetch and check products
+  main(args._[0])
 }
-
-const model = models.gpt4oMini
-const baseUrl = removeFinalSlash(args._[0])
-
-const siteId = upsertSite(db, baseUrl)
-
-const products = await fetchStoreProducts({ baseUrl })
-console.log(`Fetched ${products.length} products`)
-products.forEach((product) => {
-  upsertProduct(db, product, siteId)
-})
-
-const siteProducts = getSiteProducts(db, siteId)
-console.log(siteProducts.map((p) => p.name))
-
-for (const [index, product] of siteProducts.entries()) {
-  if (!product.description) {
-    continue
-  }
-
-  const productDbResults = getProductResults(db, product.id)
-  if (productDbResults.length > 0) {
-    console.log(
-      `${index + 1}/${products.length} - Skipping product ${product.name}`
-    )
-    continue
-  } else {
-    console.log(
-      `${index + 1}/${products.length} - Checking product ${product.name}`
-    )
-  }
-
-  const results = await checkProductAgainstAllCriteria(product, model)
-  const upsertedResults = Object.entries(results.results).map(
-    ([criteriaKey, result]) => {
-      const resultData = {
-        ...result,
-        criteria: criteriaKey,
-      }
-      return upsertProductResult(db, resultData, product.id)
-    }
-  )
-
-  console.log(
-    `Saved ${upsertedResults.length} results for product ${product.name}`
-  )
-}
-
-console.log('Done')
