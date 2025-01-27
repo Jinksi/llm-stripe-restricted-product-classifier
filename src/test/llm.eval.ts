@@ -3,7 +3,7 @@ import { evalite, createScorer } from 'evalite'
 import {
   checkProductAgainstCriteria,
   type CheckProductAgainstCriteriaResult,
-} from '../agent'
+} from '../llm'
 import { criteria, CriteriaKey, type Criteria } from '../criteria'
 import { models } from '../models'
 import { WCProduct } from '../fetchProducts'

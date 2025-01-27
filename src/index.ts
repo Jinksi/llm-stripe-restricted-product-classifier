@@ -1,6 +1,6 @@
 import minimist from 'minimist'
 
-import { checkProductAgainstAllCriteria } from './agent'
+import { checkProductAgainstAllCriteria } from './llm'
 import { models } from './models'
 import { fetchStoreProducts } from './fetchProducts'
 import {
