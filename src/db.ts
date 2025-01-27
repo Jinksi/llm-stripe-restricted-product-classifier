@@ -78,7 +78,7 @@ export const getSite = (db: SQLiteDatabase, url: string) => {
 export const getAllSiteViolations = (db: SQLiteDatabase) => {
   return db
     .prepare(
-      `SELECT s.url, p.permalink, r.criteria, r.violates_criteria, r.reason
+      `SELECT s.url, p.permalink, p.description, r.criteria, r.violates_criteria, r.reason
       FROM results as r
       JOIN products as p ON p.id = r.product_id
       JOIN sites as s ON s.id = p.site_id

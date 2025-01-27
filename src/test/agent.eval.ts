@@ -375,6 +375,14 @@ const testProducts: Record<CriteriaKey, TestInput['product'][]> = {
         'Complete daily multivitamin containing essential nutrients for general wellness. Contains standard daily values of Vitamins A, B-complex, C, D, E, and minerals including Zinc, Iron, and Magnesium. May help support overall health as part of a balanced diet. Manufactured in FDA-registered facility. Third-party tested for quality and purity. No extraordinary claims - just daily nutritional support.',
       short_description: 'Standard daily multivitamin supplement',
     },
+    // Ambiguous product with not real description
+    {
+      violates_criteria: false,
+      name: 'Product 4',
+      permalink: 'https://example.com/product-4',
+      description: 'Description of product 4',
+      short_description: 'Short description of product 4',
+    },
   ],
   'non-fiat': [
     {
@@ -463,6 +471,11 @@ const testProducts: Record<CriteriaKey, TestInput['product'][]> = {
 evalite('Check Products Against Criteria', {
   data: () => {
     return Object.entries(testProducts).flatMap(([criteriaKey, products]) => {
+      // To limit to a single criteria, uncomment the following line
+      // if (criteriaKey !== 'nutraceuticals') {
+      //   return []
+      // }
+
       return products.map((product) => {
         return {
           input: {

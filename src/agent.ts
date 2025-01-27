@@ -42,6 +42,7 @@ export const checkProductAgainstCriteria = async (
           'You will be given a product and a specific criteria. ' +
           'You will need to check the product against the criteria and return a boolean value. ' +
           'You will also need to provide a reason for your answer. ' +
+          'If there is not enough information to make a determination, you should return false. ' +
           'The criteria is: ' +
           criteria.label +
           'The examples of products in violation of this criteria are: ' +

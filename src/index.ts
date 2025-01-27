@@ -49,6 +49,11 @@ const main = async (baseUrlArg: string, forceUpdate: boolean) => {
 
   for (const [index, product] of siteProducts.entries()) {
     if (!product.description) {
+      console.log(
+        `${index + 1}/${products.length} - Skipping product ${
+          product.name
+        } because it has no description`
+      )
       continue
     }
 
