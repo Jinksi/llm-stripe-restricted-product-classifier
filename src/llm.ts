@@ -44,9 +44,9 @@ export const checkProductAgainstCriteria = async (
           'You will also need to provide a reason for your answer. ' +
           'If there is not enough information to make a determination, you should return false. ' +
           'The criteria is: ' +
-          criteria.label +
+          `<criteria>${criteria.label}</criteria>` +
           'The examples of products in violation of this criteria are: ' +
-          criteria.examples,
+          `<examples>${criteria.examples}</examples>`,
       },
       {
         role: 'user',
