@@ -35,7 +35,7 @@ export const processProduct = (product: WCProduct) => {
  * ```
  */
 export const fetchStoreProducts = async ({ baseUrl }: { baseUrl: string }) => {
-  const response = await fetch(`${baseUrl}${productsEndpoints}`)
+  const response = await fetch(`${baseUrl}${productsEndpoints}?per_page=${25}`)
   const products = (await response.json()) as WCProduct[]
   return products.map(processProduct)
 }

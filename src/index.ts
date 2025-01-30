@@ -13,6 +13,7 @@ import {
 } from './db'
 import { createDatabase } from './db'
 
+// To just fetch products, run `npm start https://testsite.wpcomstaging.com -- --fetch`
 // To check a site, run `npm start https://testsite.wpcomstaging.com`
 // To check a site and force all products to be checked again, run `npm start https://testsite.wpcomstaging.com -- --force`
 // To show all violations, run `npm run show`
@@ -20,20 +21,40 @@ import { createDatabase } from './db'
 /**
  * Remove the final slash from a URL
  */
-const removeFinalSlash = (url: string) => {
-  return url.endsWith('/') ? url.slice(0, -1) : url
+const formatUrl = (url: string) => {
+  let formattedUrl = url
+
+  // Remove the final slash from the URL
+  formattedUrl = formattedUrl.endsWith('/')
+    ? formattedUrl.slice(0, -1)
+    : formattedUrl
+
+  // If there is no http or https prefix, add https://
+  formattedUrl = formattedUrl.startsWith('http')
+    ? formattedUrl
+    : `https://${formattedUrl}`
+
+  // lowercase the URL
+  formattedUrl = formattedUrl.toLowerCase()
+
+  return formattedUrl
 }
 
 // The first argument is the base URL of the WC store
 const args = minimist(process.argv.slice(2))
 const showViolations = args.show
 const forceUpdate = args.force
+const fetchOnly = args.fetch
 
 const db = createDatabase()
 
-const main = async (baseUrlArg: string, forceUpdate: boolean) => {
+const main = async (
+  baseUrlArg: string,
+  forceUpdate: boolean,
+  fetchOnly: boolean
+) => {
   const model = models.gpt4oMini
-  const baseUrl = removeFinalSlash(baseUrlArg)
+  const baseUrl = formatUrl(baseUrlArg)
 
   const siteId = upsertSite(db, baseUrl)
 
@@ -46,6 +67,11 @@ const main = async (baseUrlArg: string, forceUpdate: boolean) => {
 
   const siteProducts = getSiteProducts(db, siteId)
   console.log(siteProducts.map((p) => p.name))
+
+  if (fetchOnly) {
+    console.log('Done')
+    process.exit(0)
+  }
 
   for (const [index, product] of siteProducts.entries()) {
     if (!product.description) {
@@ -94,5 +120,5 @@ if (showViolations) {
   process.exit(0)
 } else {
   // Fetch and check products
-  main(args._[0], forceUpdate)
+  main(args._[0], forceUpdate, fetchOnly)
 }
