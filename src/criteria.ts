@@ -1,3 +1,8 @@
+/**
+ * Criteria for Stripe's Restricted Businesses policy.
+ *
+ * @see https://stripe.com/au/legal/restricted-businesses#prohibited-businesses
+ */
 export type CriteriaKey =
   | 'illegal'
   | 'adult'
