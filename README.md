@@ -9,9 +9,9 @@ It fetches merchant product data (currently only fetching 25 products) via the W
 
 Using parallel calls improves accuracy and reduces confusion for the LLM by ensuring each product is evaluated against a single restricted business criterion at a time. This structured approach prevents overlap between categories and allows for more precise classification results.
 
-I'm using the Vercel AI SDK: https://sdk.vercel.ai/docs/introduction for this prototype, which allowed me to easily swap models, including local models such as Qwen 2.5 Instruct, Llama 3.2 and a distilled Deepseek R1. Using `gpt-4o-mini` is preferable because it is cheap (I've used 0.26 USD in testing) and can be called in parallel, whereas my local models can only process requests serially.
+I'm using the [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction) for this prototype, which allowed me to easily swap models, including local models such as Qwen 2.5 Instruct, Llama 3.2 and a distilled Deepseek R1. Using `gpt-4o-mini` is preferable because it is cheap (I've used 0.26 USD in testing) and can be called in parallel, whereas my local models can only process requests serially.
 
-Results are stores in a local SQLite database (`./db/db.sqlite`).
+Results are stored in a local SQLite database (`./db/db.sqlite`).
 
 1. Add `OPENAI_API_KEY` to `.env` (see `.env.example`).
 2. `npm install`
