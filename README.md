@@ -1,8 +1,8 @@
 An LLM-based system for determining whether a WooCommerce site's products violate Stripe's [Prohibited Businesses](https://stripe.com/au/legal/restricted-businesses#prohibited-businesses) policy.
 
-It fetches merchant product data (currently only fetching 25 products) via the WC Store API and checks it against Stripe's Restricted Businesses criteria.
+It fetches merchant product data via the [WC Store API](https://developer.woocommerce.com/2022/03/25/store-api-is-now-considered-stable/) and checks it against Stripe's Restricted Businesses criteria.
 
-`gpt-4o-mini` is used in a parallelised binary classification workflow, where each product is individually checked against restricted business categories through separate LLM calls. For each criteria, the system returns:
+`gpt-4o-mini` is used in a parallelised binary classification workflow, where each product is individually checked against restricted business categories through separate LLM calls. For each criterion, the system returns:
 
 - `violates_criteria`: `true/false`
 - `reason`: A reason for classification
