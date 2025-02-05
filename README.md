@@ -29,6 +29,8 @@ Using the Model Context Protocol, you can ask LLMs to query the database contain
 
 It can also be a quick way to create an SQL query for later use – I used MCP to create the SQL query in `./bin/export_products.sh`.
 
+Note: [`uv`](https://docs.astral.sh/uv/getting-started/installation/) and `npm/npx` are required to be installed.
+
 ### [Cursor](https://docs.cursor.com/advanced/model-context-protocol#using-mcp-tools-in-composer)
 
 - Clone the [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) repo to your computer
