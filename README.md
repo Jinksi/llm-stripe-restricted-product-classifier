@@ -23,9 +23,9 @@ Results are stored in a local SQLite database (`./db/db.sqlite`).
 6. Run `npm run show` to see all detected violations.
 7. Run `npm run export` to export all products with their violations and reasoning to a CSV file.
 
-## Using LLM agents to query the SQLite database using [Model Context Protocol](https://modelcontextprotocol.io)
+## Using LLM agents to query the SQLite database using Model Context Protocol
 
-Using the Model Context Protocol, you can ask LLMs to query the database containing product violation classification results using natural language.
+Using [Model Context Protocol](https://modelcontextprotocol.io) (MCP), you can ask LLMs to query the database containing product violation classification results using natural language.
 
 It can also be a quick way to create an SQL query for later use – I used MCP to create the SQL query in `./bin/export_products.sh`.
 
