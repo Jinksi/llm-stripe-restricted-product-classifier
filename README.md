@@ -13,6 +13,8 @@ I'm using the [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction) for this 
 
 Results are stored in a local SQLite database (`./db/db.sqlite`).
 
+## Setup and usage
+
 1. Add `OPENAI_API_KEY` to `.env` (see `.env.example`).
 2. `npm install`
 3. Run `npm run eval` to run model evaluation on test data.
