@@ -22,7 +22,7 @@ import { createDatabase } from './db'
  * Remove the final slash from a URL
  */
 const formatUrl = (url: string) => {
-  let formattedUrl = url
+  let formattedUrl = url.trim()
 
   // Remove the final slash from the URL
   formattedUrl = formattedUrl.endsWith('/')
