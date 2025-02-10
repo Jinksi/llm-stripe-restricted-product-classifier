@@ -53,6 +53,8 @@ const main = async (
   forceUpdate: boolean,
   fetchOnly: boolean
 ) => {
+  forceUpdate && console.log('Forcing update')
+
   const model = models.gpt4oMini
   const baseUrl = formatUrl(baseUrlArg)
 
@@ -86,7 +88,9 @@ const main = async (
     const productDbResults = getProductResults(db, product.id)
     if (!forceUpdate && productDbResults.length > 0) {
       console.log(
-        `${index + 1}/${products.length} - Skipping product ${product.name}`
+        `${index + 1}/${products.length} - Skipping product ${
+          product.name
+        } because it already has results`
       )
       continue
     } else {
