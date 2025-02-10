@@ -31,6 +31,7 @@ export const createDatabase = (): BetterSqlite3.Database => {
       criteria TEXT NOT NULL,
       violates_criteria TEXT NOT NULL,
       reason TEXT NOT NULL,
+      confidence REAL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       model_id TEXT NOT NULL,
       FOREIGN KEY (product_id) REFERENCES products(id)
@@ -60,6 +61,7 @@ type Result = {
   criteria: string
   violates_criteria: boolean
   reason: string
+  confidence?: number
   model_id: string
 }
 
@@ -197,22 +199,41 @@ export const upsertProductResult = (
     result.criteria,
     result.model_id
   )
-  if (existingResult) {
-    return existingResult.id
-  }
 
-  const { criteria, violates_criteria, reason, model_id } = result
+  const { criteria, violates_criteria, reason, confidence, model_id } = result
+
+  if (existingResult) {
+    return db
+      .prepare(
+        `UPDATE results
+        SET violates_criteria = @violates_criteria,
+            reason = @reason,
+            confidence = @confidence
+        WHERE product_id = @product_id
+        AND criteria = @criteria
+        AND model_id = @model_id`
+      )
+      .run({
+        product_id: productId,
+        criteria,
+        violates_criteria: violates_criteria ? 'true' : 'false',
+        reason,
+        confidence,
+        model_id,
+      }).lastInsertRowid
+  }
 
   return db
     .prepare(
-      `INSERT INTO results (product_id, criteria, violates_criteria, reason, model_id)
-      VALUES (@product_id, @criteria, @violates_criteria, @reason, @model_id)`
+      `INSERT INTO results (product_id, criteria, violates_criteria, reason, confidence, model_id)
+      VALUES (@product_id, @criteria, @violates_criteria, @reason, @confidence, @model_id)`
     )
     .run({
       product_id: productId,
       criteria,
       violates_criteria: violates_criteria ? 'true' : 'false',
       reason,
+      confidence,
       model_id,
     }).lastInsertRowid
 }

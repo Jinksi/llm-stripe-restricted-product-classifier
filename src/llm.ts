@@ -18,6 +18,7 @@ const schema = z.object({
 export interface CheckProductAgainstCriteriaResult {
   result: z.infer<typeof schema>
   criteriaKey: CriteriaKey
+  confidence: number
   product: Pick<
     WCProduct,
     'name' | 'description' | 'short_description' | 'permalink'
@@ -31,9 +32,10 @@ export const checkProductAgainstCriteria = async (
   product: WCProduct,
   model: LanguageModel
 ): Promise<CheckProductAgainstCriteriaResult> => {
-  const { object, response } = await generateObject({
+  const { object, response, logprobs } = await generateObject({
     model,
     schema,
+    temperature: 0, // Greedy sampling, only use the most likely token
     messages: [
       {
         role: 'system',
@@ -62,11 +64,24 @@ export const checkProductAgainstCriteria = async (
     maxRetries: 0, // skip default network retries, since this is local
   })
 
+  // Find the logprob for the "true" or "false" containsPineapple value token.
+  const trueOrFalseLogprob = logprobs?.find(
+    (item) => item.token === String(object.violates_criteria)
+  )
+
+  // Calculate the confidence as the exponential of the logprob to get the probability.
+  const confidence = trueOrFalseLogprob
+    ? Math.exp(trueOrFalseLogprob.logprob)
+    : 0
+
+  console.log(confidence)
+
   return {
     modelId: response.modelId,
     timestamp: response.timestamp.toISOString(),
     result: object,
     criteriaKey: criteria.key,
+    confidence,
     product: {
       name: product.name,
       description: product.description,
@@ -97,6 +112,7 @@ export interface ProductResults {
     {
       violates_criteria: boolean
       reason: string
+      confidence: number
       model_id: string
     }
   >
@@ -119,6 +135,7 @@ export const checkProductAgainstAllCriteria = async (
       acc[result.criteriaKey] = {
         ...result.result,
         model_id: result.modelId,
+        confidence: result.confidence,
       }
       return acc
     }, {} as ProductResults['results']),
