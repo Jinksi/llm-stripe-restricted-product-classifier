@@ -514,10 +514,6 @@ evalite('Check Products Against Criteria', {
         label: 'Output Violates Criteria',
         value: output.violates_criteria,
       },
-      {
-        label: 'Output Reason',
-        value: output.reason,
-      },
     ]
   },
 })
