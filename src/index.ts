@@ -76,11 +76,11 @@ const main = async (
   }
 
   for (const [index, product] of siteProducts.entries()) {
-    if (!product.description) {
+    if (!product.description && !product.name) {
       console.log(
         `${index + 1}/${products.length} - Skipping product ${
           product.name
-        } because it has no description`
+        } because it has no description or name`
       )
       continue
     }
@@ -99,7 +99,9 @@ const main = async (
       )
     }
 
-    const results = await checkProductAgainstAllCriteria(product, model)
+    const results = await checkProductAgainstAllCriteria(product, model, [
+      'nutraceuticals',
+    ])
     const upsertedResults = Object.entries(results.results).map(
       ([criteriaKey, result]) => {
         const resultData = {

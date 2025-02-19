@@ -74,8 +74,6 @@ export const checkProductAgainstCriteria = async (
     ? Math.exp(trueOrFalseLogprob.logprob)
     : 0
 
-  console.log(confidence)
-
   return {
     modelId: response.modelId,
     timestamp: response.timestamp.toISOString(),
@@ -118,11 +116,17 @@ export interface ProductResults {
   >
 }
 
+/**
+ * Check a product against all criteria except the ones specified in `criteriaKeysToOmit`.
+ */
 export const checkProductAgainstAllCriteria = async (
   product: WCProduct,
-  model: LanguageModel
+  model: LanguageModel,
+  criteriaKeysToOmit: CriteriaKey[] = []
 ): Promise<ProductResults> => {
-  const allCriteria = Object.values(criteria)
+  const allCriteria = Object.values(criteria).filter(
+    (criteria) => !criteriaKeysToOmit.includes(criteria.key)
+  )
   const results = await Promise.all(
     allCriteria.map((criteria) =>
       checkProductAgainstCriteria(criteria, product, model)
