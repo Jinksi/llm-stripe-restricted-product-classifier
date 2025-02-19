@@ -64,7 +64,7 @@ export const checkProductAgainstCriteria = async (
     maxRetries: 0, // skip default network retries, since this is local
   })
 
-  // Find the logprob for the "true" or "false" containsPineapple value token.
+  // Find the logprob for the "true" or "false" value token.
   const trueOrFalseLogprob = logprobs?.find(
     (item) => item.token === String(object.violates_criteria)
   )
