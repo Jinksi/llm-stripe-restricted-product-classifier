@@ -74,19 +74,29 @@ export const getSite = (db: SQLiteDatabase, url: string) => {
     .get({ url })
 }
 
+export interface ViolationResult {
+  url: string
+  permalink: string
+  name: string
+  description: string
+  criteria: string
+  violates_criteria: string
+  reason: string
+  confidence: number
+}
 /**
  * Get all sites that have violations
  */
 export const getAllSiteViolations = (db: SQLiteDatabase) => {
   return db
-    .prepare(
-      `SELECT s.url, p.permalink, p.description, r.criteria, r.violates_criteria, r.reason
+    .prepare<{}, ViolationResult>(
+      `SELECT s.url, p.permalink, p.name, p.description, r.confidence, r.criteria, r.violates_criteria, r.reason
       FROM results as r
       JOIN products as p ON p.id = r.product_id
       JOIN sites as s ON s.id = p.site_id
       WHERE r.violates_criteria = 'true'`
     )
-    .all()
+    .all({})
 }
 
 /**

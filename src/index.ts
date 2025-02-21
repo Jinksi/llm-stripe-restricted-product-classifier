@@ -1,5 +1,6 @@
 import minimist from 'minimist'
-import { text, spinner, log } from '@clack/prompts'
+import { text, spinner, log, note } from '@clack/prompts'
+import color from 'picocolors'
 
 import { checkProductAgainstAllCriteria } from './llm'
 import { models } from './models'
@@ -11,6 +12,7 @@ import {
   upsertProduct,
   upsertProductResult,
   upsertSite,
+  ViolationResult,
 } from './db'
 import { createDatabase } from './db'
 
@@ -51,7 +53,25 @@ const showViolations = args.show
 if (showViolations) {
   // Show all violations for a site stored in the database
   const allViolations = getAllSiteViolations(db)
-  console.log(allViolations)
+  const byUrl = allViolations.reduce((acc, violation) => {
+    acc[violation.url] = [...(acc[violation.url] || []), violation]
+    return acc
+  }, {} as Record<string, ViolationResult[]>)
+
+  Object.entries(byUrl).forEach(([url, violations]) => {
+    const title = `Site ${url}: ${violations.length} violations`
+    const message = violations
+      .map((violation) => {
+        const confidence = Math.round(violation.confidence * 100)
+        const confColor = confidence > 70 ? color.dim : color.yellow
+        return `  ${violation.name}: ${color.bold(
+          violation.criteria
+        )} ${confColor(confidence)}%`
+      })
+      .join('\n')
+    note(color.white(message), title)
+  })
+
   process.exit(0)
 }
 
