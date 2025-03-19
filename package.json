@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsx --env-file=.env src/index.ts",
     "show": "npm run start -- --show",
-    "export": "bash bin/export_products.sh",
+    "check-csv-accounts": "bash bin/check_csv_accounts.sh",
+    "export": "bash bin/export_products.sh && bash bin/export_sites.sh",
     "eval:dev": "evalite watch",
     "eval": "evalite",
     "test": "echo \"Error: no test specified\" && exit 1"
