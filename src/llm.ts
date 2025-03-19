@@ -3,6 +3,7 @@ import { generateObject, LanguageModel } from 'ai'
 
 import { criteria, type CriteriaKey, type Criteria } from './criteria'
 import { type WCProduct } from './fetchProducts'
+import { ViolationResult } from './db'
 
 const schema = z.object({
   violates_criteria: z
@@ -146,4 +147,63 @@ export const checkProductAgainstAllCriteria = async (
   }
 
   return productResults
+}
+
+/**
+ * Gets a list of violations for a site and summarises the site's compliance using an LLM.
+ */
+export const summariseSiteViolations = async (
+  siteUrl: string,
+  model: LanguageModel,
+  violationResults: ViolationResult[]
+): Promise<{
+  /** The URL of the site */
+  siteUrl: string
+  /** A summary of the site's compliance */
+  summary: string
+  /** Whether the site has any violations */
+  violation: boolean
+}> => {
+  const { object } = await generateObject({
+    model,
+    schema: z.object({
+      summary: z.string().describe("A summary of the site's compliance"),
+      violation: z
+        .boolean()
+        .describe(
+          'Whether the site has any violations. True if there are any violations, false otherwise.'
+        ),
+    }),
+    temperature: 0.3,
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You are a helpful assistant that summarises the violations of a merchant. ' +
+          'You will be given a list of violations and a reason for each violation. ' +
+          'You will need to summarise the violations and provide a reason for the violations. ' +
+          'If no violations are found, you should return false with an empty summary. ',
+      },
+      {
+        role: 'user',
+        content:
+          violationResults.length > 0
+            ? `<violation-results>${violationResults
+                .map(
+                  (v) =>
+                    `${v.criteria} ${
+                      v.violates_criteria ? 'violates' : 'does not violate'
+                    } : ${v.reason}`
+                )
+                .join('\n')}</violation-results>`
+            : 'This site has no violations.',
+      },
+    ],
+  })
+
+  return {
+    siteUrl,
+    summary: object.summary,
+    violation: object.violation,
+  }
 }

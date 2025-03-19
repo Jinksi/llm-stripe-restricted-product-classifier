@@ -20,8 +20,9 @@ Results are stored in a local SQLite database (`./db/db.sqlite`).
 3. Run `npm run eval` to run model evaluation on test data.
 4. Run `npm run eval:dev` to run model evaluation in watch mode.
 5. Run `npm start example.com` to check a site's products against the criteria.
-6. Run `npm run show` to see all detected violations.
-7. Run `npm run export` to export all products with their violations and reasoning to a CSV file.
+6. Run `npm run check-csv-accounts ./csv/accounts.csv` to check a list of sites from a CSV file. Each CSV must have a column called `url` for the site URL.
+7. Run `npm run show` to see all detected violations.
+8. Run `npm run export` to export a CSV file of all products with their violations and reasoning. Also exports a CSV of all sites with violation status and summary.
 
 ## Using LLM agents to query the SQLite database using Model Context Protocol
 

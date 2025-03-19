@@ -2,7 +2,7 @@ import minimist from 'minimist'
 import { text, spinner, log, note } from '@clack/prompts'
 import color from 'picocolors'
 
-import { checkProductAgainstAllCriteria } from './llm'
+import { checkProductAgainstAllCriteria, summariseSiteViolations } from './llm'
 import { models } from './models'
 import { fetchStoreProducts } from './fetchProducts'
 import {
@@ -13,8 +13,11 @@ import {
   upsertProductResult,
   upsertSite,
   ViolationResult,
+  getSiteViolationResults,
+  updateSiteSummary,
 } from './db'
 import { createDatabase } from './db'
+import type { CriteriaKey } from './criteria'
 
 // To just fetch products, run `npm start https://testsite.wpcomstaging.com -- --fetch`
 // To check a site, run `npm start https://testsite.wpcomstaging.com`
@@ -180,6 +183,26 @@ const main = async (
         upsertedResults.length
       } results for product ${product.name}`
     )
+  }
+
+  const siteResultsInViolation = getSiteViolationResults(db, baseUrl).filter(
+    (result) => result.violates_criteria === 'true'
+  )
+  if (siteResultsInViolation.length === 0) {
+    log.info(`Site ${baseUrl} has no violations`)
+    const summary = ''
+    const violationStatus = false
+    updateSiteSummary(db, baseUrl, summary, violationStatus)
+  } else {
+    const siteSummary = await summariseSiteViolations(
+      baseUrl,
+      model,
+      // Only include results that violate a criteria
+      siteResultsInViolation
+    )
+    log.warn(`Site ${baseUrl} has violations`)
+    log.info(siteSummary.summary)
+    updateSiteSummary(db, baseUrl, siteSummary.summary, siteSummary.violation)
   }
 
   log.success(`Completed checking products for ${baseUrl}`)

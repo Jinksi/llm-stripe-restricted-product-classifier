@@ -11,7 +11,9 @@ export const createDatabase = (): BetterSqlite3.Database => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS sites (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      url TEXT NOT NULL
+      url TEXT NOT NULL,
+      violation_status TEXT DEFAULT NULL,
+      violation_summary TEXT DEFAULT NULL
     );
 
     CREATE TABLE IF NOT EXISTS products (
@@ -44,6 +46,8 @@ export const createDatabase = (): BetterSqlite3.Database => {
 type Site = {
   id: number | bigint
   url: string
+  violation_status?: string
+  violation_summary?: string
 }
 
 type Product = {
@@ -84,6 +88,7 @@ export interface ViolationResult {
   reason: string
   confidence: number
 }
+
 /**
  * Get all sites that have violations
  */
@@ -100,6 +105,24 @@ export const getAllSiteViolations = (db: SQLiteDatabase) => {
 }
 
 /**
+ * Get all violations for a site
+ */
+export const getSiteViolationResults = (
+  db: SQLiteDatabase,
+  siteUrl: string
+) => {
+  return db
+    .prepare<{}, ViolationResult>(
+      `SELECT s.url, p.permalink, p.name, p.description, r.confidence, r.criteria, r.violates_criteria, r.reason
+      FROM results as r
+      JOIN products as p ON p.id = r.product_id
+      JOIN sites as s ON s.id = p.site_id
+      WHERE s.url = @siteUrl`
+    )
+    .all({ siteUrl })
+}
+
+/**
  * Upsert a site
  */
 export const upsertSite = (db: SQLiteDatabase, url: string) => {
@@ -110,6 +133,31 @@ export const upsertSite = (db: SQLiteDatabase, url: string) => {
 
   return db.prepare(`INSERT INTO sites (url) VALUES (@url)`).run({ url })
     .lastInsertRowid
+}
+
+/**
+ * Update a site's summary
+ */
+export const updateSiteSummary = (
+  db: SQLiteDatabase,
+  url: string,
+  violationSummary: string,
+  violationStatus: boolean
+) => {
+  const existingSite = getSite(db, url)
+  if (!existingSite) {
+    throw new Error(`Site ${url} not found`)
+  }
+
+  return db
+    .prepare(
+      `UPDATE sites SET violation_summary = @violationSummary, violation_status = @violationStatus WHERE url = @url`
+    )
+    .run({
+      url,
+      violationSummary,
+      violationStatus: violationStatus ? 'true' : 'false',
+    })
 }
 
 /**
