@@ -131,10 +131,27 @@ const main = async (
       )
       continue
     }
-
-    const results = await checkProductAgainstAllCriteria(product, model, [
+    const skipCriteria: CriteriaKey[] = [
+      'adult',
+      'debt',
+      'financial',
+      'government',
+      'identity',
+      'intellectual',
+      'legal',
+      'lending',
+      'non-fiat',
       'nutraceuticals',
-    ])
+      'travel',
+      'unfair',
+      'weapons',
+    ]
+
+    const results = await checkProductAgainstAllCriteria(
+      product,
+      model,
+      skipCriteria
+    )
 
     const upsertedResults = Object.entries(results.results).map(
       ([criteriaKey, result]) => {
