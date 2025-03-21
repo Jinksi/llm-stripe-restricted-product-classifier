@@ -18,9 +18,8 @@ urls=$(duckdb -csv -c "SELECT url FROM read_csv_auto('$csv_file');")
 urls=$(echo "$urls" | tail -n +2)
 
 # Get only the first X URLs from the list
-urls_to_check=$(echo "$urls" | head -n 20)
+urls_to_check=$(echo "$urls" | head -n 100)
 for url in $urls_to_check; do
-    echo "Checking $url..."
     # pass through all arguments to npm start
     npm start "$url" -- "$@"
 done

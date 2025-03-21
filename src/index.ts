@@ -15,6 +15,7 @@ import {
   ViolationResult,
   getSiteViolationResults,
   updateSiteSummary,
+  getSite,
 } from './db'
 import { createDatabase } from './db'
 import type { CriteriaKey } from './criteria'
@@ -94,6 +95,17 @@ const main = async (
   const baseUrl = formatUrl(baseUrlArg)
 
   const siteId = upsertSite(db, baseUrl)
+
+  if (!forceUpdate) {
+    const siteStatus = getSite(db, baseUrl)
+    // If it has a violation status, we don't need to check it again.
+    if (siteStatus?.violation_status) {
+      log.success(
+        `Site ${baseUrl} already checked with a violation status of ${siteStatus.violation_status}. Use --force to check again.`
+      )
+      process.exit(0)
+    }
+  }
 
   s.start('Fetching products')
   const products = await fetchStoreProducts({ baseUrl })
@@ -187,7 +199,7 @@ const main = async (
       })
     )
 
-    s.stop(`Completed ${processedCount} of ${siteProducts.length} products`)
+    s.stop(`Checked ${processedCount} of ${siteProducts.length} products`)
   }
 
   const siteResultsInViolation = getSiteViolationResults(db, baseUrl).filter(
