@@ -111,78 +111,83 @@ const main = async (
     process.exit(0)
   }
 
-  for (const [index, product] of siteProducts.entries()) {
+  const CHUNK_SIZE = 5 // Process 5 products at a time to avoid overwhelming the API
+  const chunks = Array.from(
+    { length: Math.ceil(siteProducts.length / CHUNK_SIZE) },
+    (_, i) => siteProducts.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+  )
+
+  let processedCount = 0
+  for (const chunk of chunks) {
     s.start(
-      `${index + 1}/${products.length} - Checking product ${product.name}`
+      `Processing ${processedCount + 1}-${Math.min(
+        processedCount + chunk.length,
+        siteProducts.length
+      )} of ${siteProducts.length} products`
     )
 
-    if (!product.description && !product.name) {
-      s.stop(
-        `${index + 1}/${products.length} - Skipping product ${
-          product.name
-        } because it has no description or name`
-      )
-      continue
-    }
-
-    const productDbResults = getProductResults(db, product.id)
-    if (!forceUpdate && productDbResults.length > 0) {
-      s.stop(
-        `${index + 1}/${products.length} - Skipping product ${
-          product.name
-        } because it already has results`
-      )
-      continue
-    }
-    const skipCriteria: CriteriaKey[] = [
-      'adult',
-      'debt',
-      'financial',
-      'government',
-      'identity',
-      'intellectual',
-      'legal',
-      'lending',
-      'non-fiat',
-      'nutraceuticals',
-      'travel',
-      'unfair',
-      'weapons',
-    ]
-
-    const results = await checkProductAgainstAllCriteria(
-      product,
-      model,
-      skipCriteria
-    )
-
-    const upsertedResults = Object.entries(results.results).map(
-      ([criteriaKey, result]) => {
-        const resultData = {
-          ...result,
-          criteria: criteriaKey,
+    await Promise.all(
+      chunk.map(async (product) => {
+        if (!product.description && !product.name) {
+          processedCount++
+          return
         }
-        return upsertProductResult(db, resultData, product.id)
-      }
+
+        const productDbResults = getProductResults(db, product.id)
+        if (!forceUpdate && productDbResults.length > 0) {
+          processedCount++
+          return
+        }
+
+        const skipCriteria: CriteriaKey[] = [
+          'adult',
+          'debt',
+          'financial',
+          'government',
+          'identity',
+          'intellectual',
+          'legal',
+          'lending',
+          'non-fiat',
+          'nutraceuticals',
+          'travel',
+          'unfair',
+          'weapons',
+        ]
+
+        const results = await checkProductAgainstAllCriteria(
+          product,
+          model,
+          skipCriteria
+        )
+
+        const upsertedResults = Object.entries(results.results).map(
+          ([criteriaKey, result]) => {
+            const resultData = {
+              ...result,
+              criteria: criteriaKey,
+            }
+            return upsertProductResult(db, resultData, product.id)
+          }
+        )
+
+        const violations = Object.entries(results.results)
+          .filter(([criteriaKey, result]) => result.violates_criteria)
+          .map(([criteriaKey, result]) => criteriaKey)
+
+        if (violations.length > 0) {
+          log.warn(
+            `Product ${product.name} has ${
+              violations.length
+            } violations: ${violations.join(', ')}`
+          )
+        }
+
+        processedCount++
+      })
     )
 
-    const violations = Object.entries(results.results)
-      .filter(([criteriaKey, result]) => result.violates_criteria)
-      .map(([criteriaKey, result]) => criteriaKey)
-
-    if (violations.length > 0) {
-      log.warn(
-        `Product ${product.name} has ${
-          violations.length
-        } violations: ${violations.join(', ')}`
-      )
-    }
-
-    s.stop(
-      `${index + 1}/${products.length} - Saved ${
-        upsertedResults.length
-      } results for product ${product.name}`
-    )
+    s.stop(`Completed ${processedCount} of ${siteProducts.length} products`)
   }
 
   const siteResultsInViolation = getSiteViolationResults(db, baseUrl).filter(
